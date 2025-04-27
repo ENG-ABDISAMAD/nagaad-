@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nagaad Internship Platform</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- jsPDF Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+</head>
+<body class="bg-white min-h-screen">
+
+    <!-- Header -->
+    <div class="bg-green-600 py-6 flex flex-col items-center justify-center shadow-md">
+        <img src="WhatsApp Image 2025-04-25 at 20.39.02_66c40439.jpg" alt="Gorod Polyclinic Center" class="w-24 h-24 rounded-full mb-4 shadow-lg border-4 border-red-500">
+        <h1 class="text-4xl font-extrabold text-white">Gorod Polyclinic Center</h1>
+        <p class="text-white mt-2 text-lg">Mogadishu - Somalia</p>
+    </div>
+
+    <!-- About Section -->
+    <section class="py-12 bg-gray-100 px-6">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl font-bold text-green-700 mb-6">About Nagaad</h2>
+            <p class="text-gray-700 text-lg leading-relaxed">
+                Nagaad is an internship platform that connects university students with hospitals across Somalia.
+                We are committed to empowering young talents by offering practical experiences in the healthcare sector,
+                preparing them for future professional careers. Join Nagaad and take your first step into the world of medical excellence!
+            </p>
+        </div>
+    </section>
+
+    <!-- Form Section -->
+    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-2xl mx-auto my-10">
+        <h1 class="text-3xl font-bold text-center text-green-600 mb-6">Student Information</h1>
+
+        <form id="studentForm" class="space-y-4">
+            <input class="w-full p-3 border border-green-400 rounded-lg focus:ring-2 focus:ring-red-400" type="text" id="name" placeholder="Full Name" required>
+            <input class="w-full p-3 border border-green-400 rounded-lg focus:ring-2 focus:ring-red-400" type="text" id="contact" placeholder="Contact Number" required>
+            <input class="w-full p-3 border border-green-400 rounded-lg focus:ring-2 focus:ring-red-400" type="text" id="university" placeholder="University" required>
+            <input class="w-full p-3 border border-green-400 rounded-lg focus:ring-2 focus:ring-red-400" type="text" id="bachelor" placeholder="Bachelor Degree" required>
+
+            <div class="flex space-x-4">
+                <label class="flex items-center text-green-700">
+                    <input type="radio" name="studyType" value="Full Time" class="mr-2" required> Full Time
+                </label>
+                <label class="flex items-center text-green-700">
+                    <input type="radio" name="studyType" value="Part Time" class="mr-2"> Part Time
+                </label>
+            </div>
+
+            <input class="w-full p-3 border border-green-400 rounded-lg focus:ring-2 focus:ring-red-400" type="text" id="idNumber" placeholder="ID Number" required>
+            <input class="w-full p-3 border border-green-400 rounded-lg focus:ring-2 focus:ring-red-400" type="text" id="completeUniversity" placeholder="Complete University" required>
+
+            <button type="submit" class="w-full bg-green-500 hover:bg-green-700 text-white p-3 rounded-lg font-bold">
+                Submit
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('studentForm');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const { jsPDF } = window.jspdf;
+
+            const name = document.getElementById('name').value;
+            const contact = document.getElementById('contact').value;
+            const university = document.getElementById('university').value;
+            const bachelor = document.getElementById('bachelor').value;
+            const studyType = document.querySelector('input[name="studyType"]:checked').value;
+            const idNumber = document.getElementById('idNumber').value;
+            const completeUniversity = document.getElementById('completeUniversity').value;
+
+            const doc = new jsPDF();
+            doc.setFontSize(16);
+            doc.text("Student Information", 20, 20);
+            doc.setFontSize(12);
+            doc.text(`Name: ${name}`, 20, 40);
+            doc.text(`Contact Number: ${contact}`, 20, 50);
+            doc.text(`University: ${university}`, 20, 60);
+            doc.text(`Bachelor: ${bachelor}`, 20, 70);
+            doc.text(`Study Type: ${studyType}`, 20, 80);
+            doc.text(`ID Number: ${idNumber}`, 20, 90);
+            doc.text(`Complete University: ${completeUniversity}`, 20, 100);
+
+            const pdfBase64 = doc.output('datauristring').split(',')[1];
+
+            const token = "b46n872toehjf4cm";
+            const instanceId = "instance109699";
+            const phone = "+252614921414";
+
+            const response = await fetch(`https://api.ultramsg.com/${instanceId}/messages/document`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    token: token,
+                    to: phone,
+                    filename: "student-info.pdf",
+                    document: `data:application/pdf;base64,${pdfBase64}`,
+                    caption: "Here is the student information."
+                })
+            });
+
+            const result = await response.json();
+            console.log(result);
+
+            if(result.sent) {
+                alert('✅ PDF has been sent successfully to WhatsApp!');
+                form.reset();
+            } else {
+                alert('❌ Failed to send PDF! Please check API settings.');
+            }
+        });
+    </script>
+
+</body>
+</html>
